@@ -4,12 +4,12 @@ from blackhc.progress_bar import with_progress_bar
 from torch import nn as nn
 from torch.utils import data
 
-import active_learning_data
-import mc_dropout
+import BatchBALD.active_learning_data as active_learning_data
+import BatchBALD.mc_dropout as mc_dropout
 import torch
 
-import torch_utils
-from acquisition_functions import AcquisitionFunction
+import BatchBALD.torch_utils as torch_utils
+from BatchBALD.acquisition_functions import AcquisitionFunction
 
 
 @dataclass
