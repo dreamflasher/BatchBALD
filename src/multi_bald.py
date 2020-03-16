@@ -3,10 +3,9 @@ import torch.nn as nn
 
 from blackhc.progress_bar import with_progress_bar
 
-import BatchBALD.joint_entropy as joint_entropy
-import joint_entropy.exact as joint_entropy_exact
-import joint_entropy.sampling as joint_entropy_sampling
-import torch_utils
+import BatchBALD.joint_entropy.exact as joint_entropy_exact
+import BatchBALD.joint_entropy.sampling as joint_entropy_sampling
+import BatchBALD.torch_utils as torch_utils
 import math
 
 from acquisition_batch import AcquisitionBatch
