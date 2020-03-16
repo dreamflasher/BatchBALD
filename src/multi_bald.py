@@ -8,10 +8,10 @@ import BatchBALD.joint_entropy.sampling as joint_entropy_sampling
 import BatchBALD.torch_utils as torch_utils
 import math
 
-from acquisition_batch import AcquisitionBatch
+from BatchBALD.acquisition_batch import AcquisitionBatch
 
-from acquisition_functions import AcquisitionFunction
-from reduced_consistent_mc_sampler import reduced_eval_consistent_bayesian_model
+from BatchBALD.acquisition_functions import AcquisitionFunction
+from BatchBALD.reduced_consistent_mc_sampler import reduced_eval_consistent_bayesian_model
 
 
 compute_multi_bald_bag_multi_bald_batch_size = None
