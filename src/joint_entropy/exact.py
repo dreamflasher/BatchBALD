@@ -1,5 +1,5 @@
 import torch
-from torch_utils import split_tensors
+from BatchBALD.torch_utils import split_tensors
 from torch import jit
 
 
