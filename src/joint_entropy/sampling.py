@@ -1,7 +1,7 @@
 import torch
 from torch import jit
 
-from torch_utils import batch_multi_choices, gather_expand, split_tensors
+from BatchBALD.torch_utils import batch_multi_choices, gather_expand, split_tensors
 
 # probs_N_K_C: #ys x #ws x #classes
 # samples_K_M: samples x #ws
