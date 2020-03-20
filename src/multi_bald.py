@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from blackhc.progress_bar import with_progress_bar
+from tqdm import tqdm
 
 import BatchBALD.joint_entropy.exact as joint_entropy_exact
 import BatchBALD.joint_entropy.sampling as joint_entropy_sampling
@@ -91,7 +92,7 @@ def compute_multi_bald_batch(
 
         prev_joint_probs_M_K = None
         prev_samples_M_K = None
-        for i in range(b):
+        for i in tqdm(range(b)):
             torch_utils.gc_cuda()
 
             if i > 0:
@@ -120,10 +121,7 @@ def compute_multi_bald_batch(
                     )
 
                     # torch_utils.cuda_meminfo()
-                    for joint_entropies_b, probs_b_K_C in with_progress_bar(
-                        torch_utils.split_tensors(joint_entropies_B, probs_B_K_C, multi_bald_batch_size),
-                        unit_scale=multi_bald_batch_size,
-                    ):
+                    for joint_entropies_b, probs_b_K_C in torch_utils.split_tensors(joint_entropies_B, probs_B_K_C, multi_bald_batch_size):
                         joint_entropies_b.copy_(
                             joint_entropy_sampling.batch(probs_b_K_C.to(device), prev_samples_M_K), non_blocking=True
                         )
@@ -147,7 +145,7 @@ def compute_multi_bald_batch(
             )
             actual_multi_bald_B = actual_multi_bald_B.item()
 
-            print(f"Actual MultiBALD: {actual_multi_bald_B}")
+            # print(f"Actual MultiBALD: {actual_multi_bald_B}")
 
             # If we early out, we don't take the point that triggers the early out.
             # Only allow early-out after acquiring at least 1 sample.
@@ -163,7 +161,7 @@ def compute_multi_bald_batch(
             # We need to map the index back to the actual dataset.
             global_acquisition_bag.append(subset_split.get_dataset_indices([winner_index]).item())
 
-            print(f"Acquisition bag: {sorted(global_acquisition_bag)}")
+            # print(f"Acquisition bag: {sorted(global_acquisition_bag)}")
 
     return AcquisitionBatch(global_acquisition_bag, acquisition_bag_scores, None)
 
