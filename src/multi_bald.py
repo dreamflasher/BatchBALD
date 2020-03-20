@@ -1,18 +1,14 @@
-import torch
-import torch.nn as nn
-
-from blackhc.progress_bar import with_progress_bar
+import math
 
 import BatchBALD.joint_entropy.exact as joint_entropy_exact
 import BatchBALD.joint_entropy.sampling as joint_entropy_sampling
 import BatchBALD.torch_utils as torch_utils
-import math
-
+import torch
+import torch.nn as nn
 from BatchBALD.acquisition_batch import AcquisitionBatch
-
 from BatchBALD.acquisition_functions import AcquisitionFunction
 from BatchBALD.reduced_consistent_mc_sampler import reduced_eval_consistent_bayesian_model
-
+from blackhc.progress_bar import with_progress_bar
 
 compute_multi_bald_bag_multi_bald_batch_size = None
 
@@ -99,7 +95,7 @@ def compute_multi_bald_batch(
                 joint_entropies_B = torch.empty((len(probs_B_K_C),), dtype=torch.float64)
 
                 exact_samples = num_classes ** i
-                if exact_samples <= num_samples:
+                if False:
                     prev_joint_probs_M_K = joint_entropy_exact.joint_probs_M_K(
                         probs_B_K_C[subset_acquisition_bag[-1]][None].to(device),
                         prev_joint_probs_M_K=prev_joint_probs_M_K,
@@ -121,7 +117,8 @@ def compute_multi_bald_batch(
 
                     # torch_utils.cuda_meminfo()
                     for joint_entropies_b, probs_b_K_C in with_progress_bar(
-                        torch_utils.split_tensors(joint_entropies_B, probs_B_K_C, multi_bald_batch_size),
+                        torch_utils.split_tensors(
+                            joint_entropies_B, probs_B_K_C, multi_bald_batch_size),
                         unit_scale=multi_bald_batch_size,
                     ):
                         joint_entropies_b.copy_(
@@ -168,7 +165,8 @@ def compute_multi_bald_batch(
     return AcquisitionBatch(global_acquisition_bag, acquisition_bag_scores, None)
 
 
-def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
+def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K,
+                              chunk_size, device, out_joint_entropies_B):
     """This one switches between devices, too."""
     for joint_entropies_b, probs_b_K_C in with_progress_bar(
         torch_utils.split_tensors(out_joint_entropies_B, probs_B_K_C, chunk_size), unit_scale=chunk_size
@@ -180,7 +178,8 @@ def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K, chunk_size, dev
     return joint_entropies_b
 
 
-def batch_exact_joint_entropy_logits(logits_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
+def batch_exact_joint_entropy_logits(
+        logits_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
     """This one switches between devices, too."""
     for joint_entropies_b, logits_b_K_C in with_progress_bar(
         torch_utils.split_tensors(out_joint_entropies_B, logits_B_K_C, chunk_size), unit_scale=chunk_size
