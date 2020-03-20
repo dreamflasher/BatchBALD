@@ -95,7 +95,7 @@ def compute_multi_bald_batch(
                 joint_entropies_B = torch.empty((len(probs_B_K_C),), dtype=torch.float64)
 
                 exact_samples = num_classes ** i
-                if False:
+                if True:
                     prev_joint_probs_M_K = joint_entropy_exact.joint_probs_M_K(
                         probs_B_K_C[subset_acquisition_bag[-1]][None].to(device),
                         prev_joint_probs_M_K=prev_joint_probs_M_K,
