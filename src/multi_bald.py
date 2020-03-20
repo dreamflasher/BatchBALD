@@ -56,7 +56,7 @@ def compute_multi_bald_batch(
     # torch_utils.cuda_meminfo()
 
     with torch.no_grad():
-        num_samples_per_ws = 1000 // k
+        num_samples_per_ws = 5000 // k
         num_samples = num_samples_per_ws * k
 
         if device.type == "cuda":
