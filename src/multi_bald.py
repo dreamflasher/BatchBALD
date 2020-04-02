@@ -1,19 +1,15 @@
+import math
+
 import torch
 import torch.nn as nn
-
-from blackhc.progress_bar import with_progress_bar
 from tqdm import tqdm
 
 import BatchBALD.joint_entropy.exact as joint_entropy_exact
 import BatchBALD.joint_entropy.sampling as joint_entropy_sampling
 import BatchBALD.torch_utils as torch_utils
-import math
-
 from BatchBALD.acquisition_batch import AcquisitionBatch
-
 from BatchBALD.acquisition_functions import AcquisitionFunction
 from BatchBALD.reduced_consistent_mc_sampler import reduced_eval_consistent_bayesian_model
-
 
 compute_multi_bald_bag_multi_bald_batch_size = None
 
@@ -57,7 +53,7 @@ def compute_multi_bald_batch(
     # torch_utils.cuda_meminfo()
 
     with torch.no_grad():
-        num_samples_per_ws = 5000 // k
+        num_samples_per_ws = 1000 // k
         num_samples = num_samples_per_ws * k
 
         if device.type == "cuda":
@@ -101,6 +97,7 @@ def compute_multi_bald_batch(
 
                 exact_samples = num_classes ** i
                 if exact_samples <= num_samples:
+                    print("exact")
                     prev_joint_probs_M_K = joint_entropy_exact.joint_probs_M_K(
                         probs_B_K_C[subset_acquisition_bag[-1]][None].to(device),
                         prev_joint_probs_M_K=prev_joint_probs_M_K,
@@ -111,6 +108,7 @@ def compute_multi_bald_batch(
                         probs_B_K_C, prev_joint_probs_M_K, multi_bald_batch_size, device, joint_entropies_B
                     )
                 else:
+                    print("approximate")
                     if prev_joint_probs_M_K is not None:
                         prev_joint_probs_M_K = None
                         torch_utils.gc_cuda()
@@ -121,7 +119,8 @@ def compute_multi_bald_batch(
                     )
 
                     # torch_utils.cuda_meminfo()
-                    for joint_entropies_b, probs_b_K_C in torch_utils.split_tensors(joint_entropies_B, probs_B_K_C, multi_bald_batch_size):
+                    for joint_entropies_b, probs_b_K_C in torch_utils.split_tensors(
+                            joint_entropies_B, probs_B_K_C, multi_bald_batch_size):
                         joint_entropies_b.copy_(
                             joint_entropy_sampling.batch(probs_b_K_C.to(device), prev_samples_M_K), non_blocking=True
                         )
@@ -166,11 +165,11 @@ def compute_multi_bald_batch(
     return AcquisitionBatch(global_acquisition_bag, acquisition_bag_scores, None)
 
 
-def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
+def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K,
+                              chunk_size, device, out_joint_entropies_B):
     """This one switches between devices, too."""
-    for joint_entropies_b, probs_b_K_C in with_progress_bar(
-        torch_utils.split_tensors(out_joint_entropies_B, probs_B_K_C, chunk_size), unit_scale=chunk_size
-    ):
+    for joint_entropies_b, probs_b_K_C in torch_utils.split_tensors(
+            out_joint_entropies_B, probs_B_K_C, chunk_size):
         joint_entropies_b.copy_(
             joint_entropy_exact.batch(probs_b_K_C.to(device), prev_joint_probs_M_K), non_blocking=True
         )
@@ -178,11 +177,11 @@ def batch_exact_joint_entropy(probs_B_K_C, prev_joint_probs_M_K, chunk_size, dev
     return joint_entropies_b
 
 
-def batch_exact_joint_entropy_logits(logits_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
+def batch_exact_joint_entropy_logits(
+        logits_B_K_C, prev_joint_probs_M_K, chunk_size, device, out_joint_entropies_B):
     """This one switches between devices, too."""
-    for joint_entropies_b, logits_b_K_C in with_progress_bar(
-        torch_utils.split_tensors(out_joint_entropies_B, logits_B_K_C, chunk_size), unit_scale=chunk_size
-    ):
+    for joint_entropies_b, logits_b_K_C in torch_utils.split_tensors(
+            out_joint_entropies_B, logits_B_K_C, chunk_size):
         joint_entropies_b.copy_(
             joint_entropy_exact.batch(logits_b_K_C.to(device).exp(), prev_joint_probs_M_K), non_blocking=True
         )
