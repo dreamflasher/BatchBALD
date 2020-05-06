@@ -1,11 +1,11 @@
-pytorch_ignite==0.1.1
-pytest==3.10.0
+pytorch_ignite>=0.1.1
+pytest>=3.10.0
 torch
 blackhc.laaos~=0.1
 blackhc.notebook
 blackhc.progress_bar
 numpy
 torchvision
-typing==3.6.6
-dataclasses==0.6
+typing>=3.6.6
+dataclasses>=0.6
 pytest-benchmark
